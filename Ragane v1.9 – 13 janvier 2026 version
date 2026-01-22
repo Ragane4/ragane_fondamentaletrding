@@ -1,0 +1,161 @@
+# ragane_eve_complete_with_all_sites.py
+# Contient TOUS les paramètres + TOUS les sites depuis le 6 décembre 2025
+# Exécute ce fichier pour tester (menu interactif)
+
+# ────────────────────────────────────────────────
+# Configuration de base
+# ────────────────────────────────────────────────
+
+PREFIX = "ragane_"
+DEV_PASSWORD = "devpass"
+DEV_MODE = False
+
+# ────────────────────────────────────────────────
+# TOUS LES SITES & SOURCES (depuis le début)
+# ────────────────────────────────────────────────
+
+SITES_SOURCES = {
+    "Banques Centrales (primaires)": [
+        "federalreserve.gov",
+        "ecb.europa.eu",
+        "bankofengland.co.uk",
+        "boj.or.jp",
+        "rbnz.govt.nz",
+        "bankofcanada.ca",
+        "rba.gov.au"
+    ],
+    "Calendriers économiques (news & surprises)": [
+        "forexfactory.com/calendar",
+        "fxstreet.com/economic-calendar",
+        "investing.com/economic-calendar",
+        "tradingeconomics.com/calendar",
+        "myfxbook.com/forex-economic-calendar",
+        "babypips.com/economic-calendar",
+        "fxempire.com/tools/economic-calendar",
+        "cmegroup.com/trading/interest-rates"  # CME FedWatch
+    ],
+    "Analyses & consensus banques majeures": [
+        "bloomberg.com/markets",
+        "reuters.com/markets",
+        "goldmansachs.com/insights",
+        "jpmorgan.com/insights",
+        "mufgresearch.com/fx",
+        "ubs.com/global/en/wealth-management",
+        "yardeni.com",
+        "fred.stlouisfed.org",
+        "marketwatch.com/economy-politics",
+        "oanda.com/forex-trading/analysis/economic-calendar",
+        "barchart.com/economic-calendar",
+        "economics.com",  # Trading Economics
+        "morganstanley.com/ideas",
+        "nomuraconnects.com",
+        "scotiabank.com/ca/en/about/economics"
+    ],
+    "Gold, commodities & sentiment": [
+        "kitco.com",
+        "dailyfx.com"
+    ],
+    "Sites spécifiques mentionnés / explorés": [
+        "ing.be",
+        "financialjuice.com",
+        "fxempire.com",
+        "babypips.com",
+        "yardeni.com"
+    ]
+}
+
+# ────────────────────────────────────────────────
+# Dictionnaire des paramètres (tous connus depuis jour 1)
+# ────────────────────────────────────────────────
+
+PARAMETRES = {
+    "bonjour": "exemple analyse fondamentale rapide (or/USD souvent)",
+    "sauvegarde": "enregistre tout (simulation)",
+    "reset_clé": "efface mémoire conversation",
+    "stop": "silence immédiat",
+    "mode_normal": "retour mode classique",
+    "dev": "mode développeur (mot de passe requis)",
+    "manuelut": "affiche manuel complet",
+    "help": "aide générale ou spécifique (ex: help/news)",
+    "version": "version actuelle (v1.9 – 13 janv 2026)",
+    "information de la systeme": "infos base (version, date création...)",
+    "météo": "rapport fonda complet (demande période)",
+    "zoom": "résumé 3 lignes",
+    "sentiment": "% haussier/baissier + drivers + cible",
+    "humeur": "phrase crue (rose / pue / brûle)",
+    "tendance_heros": "haussier/baissier + %",
+    "rapport_fondamental_complet": "rapport exhaustif BC + taux + news",
+    "mode_analyste": "macro pure (taux, yields, carry...)",
+    "exemple": "direction + % court",
+    "direction": "direction + % court",
+    "share": "direction + % court",
+    "news": "analyse news (variantes : date, semaine, Mois...)",
+    "bias": "direction + % (avec /plusexpl pour raisons)",
+    "formation": "lance formation 10 modules",
+    "rentialisation": "mise à jour profil",
+    "nouvelle_utilisateur": "création nouveau profil"
+}
+
+# ────────────────────────────────────────────────
+# Fonction traitement commande (simple)
+# ────────────────────────────────────────────────
+
+def traiter_commande(msg: str) -> str:
+    global DEV_MODE
+    msg = msg.strip().lower()
+
+    if msg in ("dev", f"{PREFIX}dev"):
+        pwd = input("Mot de passe dev → ")
+        if pwd == DEV_PASSWORD:
+            DEV_MODE = True
+            return "Mode développeur ACTIVÉ"
+        return "Mot de passe incorrect"
+
+    if msg in ("sortie", f"{PREFIX}mode_normal"):
+        DEV_MODE = False
+        return "Mode normal activé"
+
+    if DEV_MODE and msg.startswith("dev : "):
+        return f"[DEV] {msg[6:]} → traité en mode dev"
+
+    # Retrait préfixe
+    cmd = msg[len(PREFIX):] if msg.startswith(PREFIX) else msg
+
+    if cmd in PARAMETRES:
+        return f"→ {cmd.upper()} : {PARAMETRES[cmd]}"
+
+    return "Commande non reconnue. Utilise ragane_ (ex: ragane_météo gold)"
+
+# ────────────────────────────────────────────────
+# Affichage sites + menu test
+# ────────────────────────────────────────────────
+
+def afficher_tous_sites():
+    print("\n=== TOUS LES SITES & SOURCES (depuis 6 déc. 2025) ===\n")
+    for categorie, liste in SITES_SOURCES.items():
+        print(f"{categorie}:")
+        for site in liste:
+            print(f"  • {site}")
+    print("\n" + "="*60 + "\n")
+
+def main():
+    print("Ragane Eve - Tous paramètres + TOUS les sites depuis le début")
+    print("Préfixe obligatoire :", PREFIX)
+    print("Mot de passe dev  :", DEV_PASSWORD)
+    print("\nTape 'sites' pour voir TOUS les sites")
+    print("Ou tape une commande (ex: ragane_bias GU)")
+    print("Tape 'exit' pour quitter\n")
+
+    while True:
+        entree = input("→ ").strip()
+        if entree.lower() in ("exit", "quit", "q"):
+            print("À bientôt !")
+            break
+        if entree.lower() == "sites":
+            afficher_tous_sites()
+        else:
+            print(traiter_commande(entree))
+            print("-" * 50)
+
+if __name__ == "__main__":
+    main()

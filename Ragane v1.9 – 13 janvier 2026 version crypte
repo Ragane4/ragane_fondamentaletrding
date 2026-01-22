@@ -1,0 +1,55 @@
+import base64
+
+# Liste de tous les paramètres (comme dans le système Eve)
+parameters = [
+    "ragane_bonjour: Donne un exemple d’analyse fondamentale immédiate",
+    "ragane_rentialisation: Active/met à jour profil utilisateur",
+    "ragane_nouvelle_utilisateur: Crée nouveau profil",
+    "ragane_météo: Rapport complet + USD/JPY bouclé",
+    "ragane_zoom: Résumé 3 lignes",
+    "ragane_sentiment: % + drivers + cible",
+    "ragane_humeur: Phrase crue",
+    "ragane_tendance_heros: Haussier/baissier + %",
+    "ragane_formation: 10 modules formation",
+    "ragane_stop: Silence immédiat",
+    "ragane_sauvegarde: Enregistre tout",
+    "ragane_reset_clé: Efface mémoire",
+    "ragane_rapport_fondamental_complet: Rapport exhaustif",
+    "ragane_mode_analyste: Macro pure",
+    "ragane_exemple: Direction + %",
+    "ragane_direction: Direction + %",
+    "ragane_share: Direction + %",
+    "ragane_news: Analyse news spécifique/période",
+    "ragane_non_du_devis: Analyse news (synonyme)",
+    "ragane_date: Analyse news par date",
+    "ragane_semaine: Analyse news par semaine",
+    "ragane_Mois: Analyse news par mois",
+    "ragane_bias: Direction + % (+ /plusexpl pour raisons)",
+    "ragane_biais: Direction + % (synonyme)",
+    "ragane_mode_normal: Tous outils classiques",
+    "ragane_dev: Mode édition (mot de passe requis)",
+    "ragane_mode_developer: Mode édition (synonyme)",
+    "ragane_manuelut: Manuel d’utilisation complet",
+    "ragane_help: Aide complète ou spécifique (ragane_help/news)"
+]
+
+# Fonction pour encrypter en base64
+def encrypt_param(param):
+    return base64.b64encode(param.encode('utf-8')).decode('utf-8')
+
+# Fonction pour décrypter
+def decrypt_param(encrypted):
+    return base64.b64decode(encrypted).decode('utf-8')
+
+# Encrypte tous les paramètres
+encrypted_params = [encrypt_param(p) for p in parameters]
+
+# Afficher les paramètres encryptés
+print("Liste des paramètres encryptés en base64 :")
+for enc in encrypted_params:
+    print(enc)
+
+# Pour utiliser : décrypter et utiliser
+print("\nExemple de décryptage :")
+for enc in encrypted_params:
+    print(decrypt_param(enc))

@@ -1,0 +1,179 @@
+# ragane_system_v1.9.5.py
+# Système de commandes ragane_ – version portable pour autre compte Grok ou local
+# Par Ragane – Antananarivo, janvier 2026
+
+import sys
+import datetime
+import getpass  # pour mot de passe invisible
+
+# ────────────────────────────────────────────────
+# ÉTAT GLOBAL
+# ────────────────────────────────────────────────
+
+saved_data = {}
+profiles = {}
+dev_mode = False
+current_mode = "normal"
+vocl_default = False          # vocl_on / vocl_off
+message_count = 0
+MESSAGE_LIMIT = 200           # limite cachée – NE PAS afficher dans manuelut
+dev_password_hash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"  # sha256("devpass")
+
+# ────────────────────────────────────────────────
+# FONCTIONS UTILITAIRES
+# ────────────────────────────────────────────────
+
+def is_vocl_requested(cmd):
+    cmd_lower = cmd.lower()
+    return any(x in cmd_lower for x in ["/vocl", " vocl", "vocl "])
+
+def is_novocl_requested(cmd):
+    cmd_lower = cmd.lower()
+    return any(x in cmd_lower for x in ["/novocl", " novocl", "novocl "])
+
+def should_use_vocal_style(cmd):
+    if vocl_default:
+        return not is_novocl_requested(cmd)
+    else:
+        return is_vocl_requested(cmd)
+
+def vocal_style(text):
+    # Transformation très basique vers style oral
+    text = text.replace("%", " pour cent")
+    text = text.replace("72%", "soixante-douze pour cent")
+    text = text.replace("→", "… du coup ")
+    lines = text.split("\n")
+    return " ".join(lines).strip() + " Voilà pour l'instant."
+
+def count_message():
+    global message_count
+    message_count += 1
+    if message_count == MESSAGE_LIMIT:
+        return "Limite de 200 messages atteinte. Contacte Ragane pour activer un nouveau paramètre ou réinitialiser."
+    elif message_count > MESSAGE_LIMIT:
+        return "Système temporairement désactivé. Contacte Ragane pour débloquer ou ajouter un nouveau quota."
+    return None
+
+# ────────────────────────────────────────────────
+# TRAITEMENT DES COMMANDES
+# ────────────────────────────────────────────────
+
+def process_command(raw_input):
+    global dev_mode, vocl_default, message_count
+
+    cmd = raw_input.strip().lower()
+
+    # Vérification limite (cachée)
+    if message_count >= MESSAGE_LIMIT and not cmd.startswith("dev"):
+        limit_msg = count_message()
+        if limit_msg:
+            return limit_msg
+
+    # Exceptions sans ragane_
+    if cmd in ["dev", "mode developer", "mode normal", "sortie", "exit"]:
+        pass
+    elif not cmd.startswith("ragane_"):
+        return "Commande non reconnue. Utilise ragane_ devant (ex: ragane_bias GU)"
+
+    # Enlever le préfixe ragane_
+    if cmd.startswith("ragane_"):
+        cmd = cmd[7:].strip()
+
+    # ──── Mode dev ────
+    if cmd in ["dev", "mode developer"]:
+        pw = getpass.getpass("Mot de passe développeur : ")
+        if pw.strip() == "devpass":  # ← change ici si tu veux un autre mot de passe
+            dev_mode = True
+            return "Mode développeur activé."
+        else:
+            return "Accès refusé."
+
+    if dev_mode and cmd.startswith("dev :"):
+        sub = cmd[6:].strip()
+        if sub == "sortie":
+            dev_mode = False
+            return "Sortie du mode dev."
+        elif sub == "liste":
+            return "Liste params : bonjour, météo, bias, vocl_on, vocl_off, etc. (voir manuelut)"
+        # autres dev : ajoute, supprime, etc. → à compléter si besoin
+        else:
+            return "Commande dev inconnue."
+
+    # ──── Commandes principales ────
+    vocal = should_use_vocal_style(raw_input)
+
+    if cmd == "bonjour":
+        resp = "Bonjour. Exemple : L’or est à 4 142 $ car la Fed maintient les taux, PCE sticky à 2.8 %, yields US 4.58 %."
+    elif cmd == "manuelut":
+        resp = """Manuel d’utilisation – ragane_ obligatoire
+
+ragane_bonjour
+ragane_météo [paire]
+ragane_bias [paire] [/plusexpl]
+ragane_sentiment [paire]
+ragane_humeur [paire]
+ragane_tendance_heros [paire]
+ragane_zoom
+ragane_news [paire]
+ragane_rapport_fondamental_complet
+ragane_mode_analyste
+ragane_mode_normal
+ragane_vocl_on     → mode vocal par défaut
+ragane_vocl_off    → retour texte
+/vocl ou vocl      → force vocal cette fois
+/novocl ou novocl  → force texte cette fois
+ragane_sauvegarde
+ragane_stop
+
+Pas de conseil financier – analyse fondamentale pure."""
+    elif cmd == "vocl_on":
+        vocl_default = True
+        resp = "Mode vocal activé par défaut."
+    elif cmd == "vocl_off":
+        vocl_default = False
+        resp = "Mode vocal désactivé – retour texte classique."
+    elif cmd == "sauvegarde":
+        resp = f"Sauvegardé – v1.9.5 – {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    elif cmd == "stop":
+        resp = "Silence immédiat."
+    else:
+        resp = f"Paramètre '{cmd}' reconnu mais réponse exemple seulement."
+
+    # Appliquer style vocal si demandé
+    if vocal:
+        resp = vocal_style(resp)
+
+    # Incrémenter compteur (sauf commandes dev ou basiques)
+    if not cmd.startswith("dev") and cmd not in ["sauvegarde", "stop"]:
+        limit_msg = count_message()
+        if limit_msg:
+            return limit_msg
+
+    return resp
+
+# ────────────────────────────────────────────────
+# BOUCLE PRINCIPALE
+# ────────────────────────────────────────────────
+
+def main():
+    print("Bienvenue – Système ragane_ v1.9.5")
+    print("Tape ragane_manuelut pour voir les commandes")
+    print("Tape exit pour quitter\n")
+
+    while True:
+        try:
+            user_input = input("→ ").strip()
+            if user_input.lower() in ["exit", "quit"]:
+                print("Au revoir !")
+                break
+            if not user_input:
+                continue
+
+            response = process_command(user_input)
+            print(response)
+        except KeyboardInterrupt:
+            print("\nArrêt par Ctrl+C")
+            break
+
+if __name__ == "__main__":
+    main()

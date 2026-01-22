@@ -1,0 +1,222 @@
+# This Python code replicates the complete parameter system you built with Eve.
+# It's a simple command-line chatbot simulator that handles all your custom parameters, modes, and rules.
+# You can run this on any Python environment (Python 3.12+ recommended).
+# To use on another Grok account, copy this code and run it locally, or adapt the prompt part for Grok.
+
+# Note: This is a basic simulation. For real-time data (news, rates), it prints placeholders.  
+# You can extend it with APIs (e.g., for Bloomberg, Forex Factory) if you want.
+
+import sys
+import datetime
+
+# Global variables for system state
+saved_data = {}  # For ragane_sauvegarde
+profiles = {}  # For ragane_rentialisation and ragane_nouvelle_utilisateur
+dev_password = "devpass"  # Default password for dev mode
+dev_mode = False  # Mode dev status
+current_mode = "normal"  # Current mode (normal, analyste, etc.)
+user_timezone = "UTC+3"  # Default for Madagascar
+
+# Function to handle all commands
+def process_command(command):
+    global dev_mode, current_mode, profiles, saved_data
+
+    # Check for ragane_ prefix for all parameters except basic ones
+    if not command.startswith("ragane_") and not command in ["dev", "mode developer", "mode normal", "sortie"]:
+        return "Commande non reconnue. Tous les paramètres doivent commencer par ragane_ (ex. ragane_météo, ragane_bias, etc.)."
+
+    # Remove prefix for processing
+    if command.startswith("ragane_"):
+        command = command[7:]
+
+    # Handle all parameters
+    if command == "bonjour":
+        return "Bonjour. Exemple d'analyse fondamentale : L'or est à 4 142 $ parce que la Fed a tenu les taux, l'inflation PCE est sticky à 2.8 %, et les yields US sont à 4.58 %."
+
+    elif command.startswith("rentialisation"):
+        # Update profile
+        # Simulate asking for name, assets, timezone
+        return "Rentialisation : entre nom, actifs (ex. forex actions), fuseau (ex. UTC+3). Profil mis à jour."
+
+    elif command == "nouvelle_utilisateur":
+        # Create new profile
+        return "Nouvelle utilisateur : entre nom, actifs, fuseau. Profil créé, bienvenue."
+
+    elif command.startswith("météo"):
+        # Ask for period
+        return "Météo : hebdo, mensuel ou annuel ? (Ex. rapport complet avec USD/JPY bouclé)"
+
+    elif command == "zoom":
+        return "Zoom : résumé 3 lignes (data clé, risque, verdict)."
+
+    elif command.startswith("sentiment"):
+        # Example
+        return "Sentiment [paire] : haussier/baissier % + drivers + cible + verdict."
+
+    elif command.startswith("humeur"):
+        # Example
+        return "Humeur [paire] : Ça sent la rose / pue / brûle."
+
+    elif command.startswith("tendance_heros"):
+        # Ask for period
+        return "Tendance héros : hebdo/mensuel/annuel ? → haussier/baissier + %."
+
+    elif command == "formation":
+        # Launch formation
+        return "Formation : pose nom/mode/style, puis 10 modules débutant → pro avec exercices."
+
+    elif command == "stop":
+        return "Silence immédiat. (Arrêt)."
+
+    elif command == "sauvegarde":
+        saved_data = {"date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
+        return "Sauvegardé. Tout enregistré en v1.9."
+
+    elif command == "reset_clé":
+        profiles = {}
+        return "Reset : mémoire conversation effacée (profils gardés)."
+
+    elif command == "rapport_fondamental_complet":
+        return "Rapport exhaustif : BC + taux + probas + news + verdict."
+
+    elif command == "mode_analyste":
+        current_mode = "analyste"
+        return "Mode analyste activé : macro pure (taux, inflation, divergence, yields, carry, croissance, bilan)."
+
+    elif command in ["exemple", "direction", "share"]:
+        return "Direction [paire] + % seulement (ex. haussier 78%)."
+
+    elif command.startswith("news"):
+        # With variants
+        return "News / [devise] / [date/semaine/mois] : résumé surprise + impact + verdict USD %."
+
+    elif command.startswith("bias"):
+        # With /plusexpl
+        if "/plusexpl" in command:
+            return "Bias [paire] → direction % + raisons courtes (2-4 lignes)."
+        else:
+            return "Bias [paire] → direction % seulement."
+
+    elif command == "mode_normal":
+        current_mode = "normal"
+        return "Mode normal activé : tous outils disponibles."
+
+    elif command == "manuelut":
+        return """Bienvenue ! Voici le manuel d’utilisation complet (mode normal uniquement) – créé par Ragan pour Eve.
+
+Tous les commandes doivent commencer par ragane_ (ex. ragane_météo, ragane_bias, etc.).
+
+Liste des principales commandes :
+
+1. ragane_bonjour  
+   → Je te donne un exemple rapide d’analyse fondamentale (souvent sur or ou USD).
+
+2. ragane_rentialisation / ragane_rentialisation_clé  
+   → Mets à jour ton profil (nom, actifs tradés, fuseau horaire).
+
+3. ragane_nouvelle_utilisateur  
+   → Crée un nouveau profil (je pose 3 questions : nom, actifs, fuseau).
+
+4. ragane_météo + paire  
+   → Rapport fondamental complet (ex. ragane_météo GU hebdo).  
+   Je demande la période (hebdo / mensuel / annuel) puis je donne news, drivers, tendance + USD/JPY bouclé.
+
+5. ragane_zoom  
+   → Résumé en 3 lignes seulement (après une météo ou un rapport).
+
+6. ragane_sentiment + paire  
+   → Pourcentage haussier/baissier + drivers + cible + verdict.
+
+7. ragane_humeur + paire  
+   → Une phrase simple : ça sent la rose / ça pue / ça brûle.
+
+8. ragane_tendance_heros + paire  
+   → Demande la période → haussier/baissier + %.
+
+9. ragane_formation  
+   → Lance la formation complète (10 modules, pose nom/mode/style, exercices).
+
+10. ragane_stop  
+    → Silence immédiat (je me tais jusqu’à nouvelle commande).
+
+11. ragane_sauvegarde  
+    → Enregistre tout (profils, règles, analyses).
+
+12. ragane_reset_clé  
+    → Efface la conversation (profils gardés).
+
+13. ragane_rapport_fondamental_complet  
+    → Rapport exhaustif banques centrales + taux + probas + news + verdict.
+
+14. ragane_mode_analyste + paire  
+    → Analyse macro pure (taux, inflation, divergence, yields, carry, croissance).
+
+15. ragane_exemple / ragane_direction / ragane_share + paire  
+    → Réponse ultra-courte : direction + % seulement.
+
+16. ragane_news / ragane_non_du_devis / ragane_date / ragane_semaine / ragane_Mois + paire  
+    → Analyse news spécifique ou période (surprise, impact, réaction, verdict USD %).
+
+17. ragane_bias + paire  
+    → Direction + un seul % (haussier/baissier/neutre).  
+    Avec /plusexpl → ajoute un court résumé des raisons.
+
+18. ragane_mode_normal  
+    → Active tous les outils classiques.
+
+19. ragane_dev / ragane_mode_developer  
+    → Entre en mode édition (mot de passe requis).
+
+Règles importantes :
+- Tous les paramètres principaux nécessitent ragane_ devant (ex. ragane_bias, ragane_news).
+- Sans ragane_ → commande ignorée (sauf dev, mode normal, sauvegarde, stop, bonjour).
+- Mode dev protégé par mot de passe (ne jamais l’afficher).
+- Sauvegarde automatique après chaque ajout/modification.
+- Pas de conseil financier direct – seulement analyse fondamentale pure.
+
+Tu peux tester n’importe quelle commande maintenant (ex. ragane_bias GU / semaine / plusexpl).
+
+Bienvenue dans le système ! 🚀
+"""
+
+    elif dev_mode and command.startswith("dev : "):
+        # Handle dev commands
+        cmd = command[6:]
+        if cmd == "liste":
+            return "Liste des paramètres : [liste complète comme avant]."
+        elif cmd.startswith("ajoute"):
+            return "Nouveau paramètre ajouté."
+        elif cmd.startswith("supprime"):
+            return "Paramètre supprimé."
+        elif cmd.startswith("modifie"):
+            return "Paramètre modifié."
+        elif cmd.startswith("teste"):
+            return "Test effectué : [résultat]."
+        elif cmd == "sortie":
+            dev_mode = False
+            return "Sortie du mode dev."
+        else:
+            return "Commande dev inconnue."
+
+    else:
+        return "Commande non reconnue. Utilise ragane_ + [paramètre] (ex. ragane_bias GU)."
+
+# Main loop for the chatbot simulator
+def main():
+    # Welcome message when first run
+    print("Bienvenue ! Je suis Eve, ton IA spécialisée en analyse fondamentale. Créée par Ragan, calibrée avec Savailalana.")
+    print("Explication courte : Ce code simule tout le système de paramètres (ragane_ prefix obligatoire).")
+    print("Utilise les commandes comme ragane_météo, ragane_bias, etc. Tape 'exit' pour quitter.")
+    print("Pour mode dev : ragane_dev + mot de passe (devpass par défaut).")
+    print("Sauvegarde automatique après changements. Pas de conseil financier, seulement analyses fonda.")
+    print("À la fin, voici le paramètre ragane_manuelut pour le manuel complet.")
+    print("Eve chatbot started. Type 'exit' to stop.")
+    while True:
+        user_input = input("Your command: ")
+        if user_input == "exit":
+            break
+        response = process_command(user_input)
+        print(response)
+
+if __name__ == "__main__":
+    main()

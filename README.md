@@ -1,0 +1,2 @@
+# ragane_fondamentaletrding
+Analyse Fondamentale
